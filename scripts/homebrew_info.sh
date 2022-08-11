@@ -15,30 +15,36 @@ CURRENTUSER=$(echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && !
 if [[ $CURRENTUSER != "" ]]; then
     brew=$(sudo -i -u $CURRENTUSER command -v brew)
 
-    if [[ $? = 1 ]]; then
+    if [[ $? = 1 ]] && [[ -f "/usr/local/bin/brew" ]] ; then
+        # If Intel Mac
         brew="/usr/local/bin/brew"
+    elif [[ $? = 1 ]] && [[ -f "/opt/homebrew/bin/brew" ]] ; then
+        # Else if Apple Silicon Mac
+        brew="/opt/homebrew/bin/brew"
     fi
 else
-    brew="/usr/local/bin/brew"
+    if [[ -f "/usr/local/bin/brew" ]] ; then
+        # If Intel Mac
+        brew="/usr/local/bin/brew"
+    elif [[ -f "/opt/homebrew/bin/brew" ]] ; then
+        # Else if Apple Silicon Mac
+        brew="/opt/homebrew/bin/brew"
+    fi
 fi
 
-if [[ -f $brew ]]; then
 
-    # Create cache dir if it does not exist
-    DIR=$(dirname $0)
-    mkdir -p "$DIR/cache"
-    homebrewfile="$DIR/cache/homebrew_info.json"
+
+if [[ -f $brew ]]; then
 
     # The sudo is needed to escape brew.sh's UID of 0 check
     BREWCONFIG='[{"'
     BREWCONFIG="$BREWCONFIG$(cd /; sudo -HE -u nobody $brew config | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/", "/g' -e 's/: /": "/g')"
     BREWCONFIG="$BREWCONFIG\"}]"
 
+    homebrewfile="$DIR/cache/homebrew_info.json"
     echo "${BREWCONFIG}" > "${homebrewfile}"
 
 else
-
     echo "Homebrew is not installed, skipping"
-
 fi
 exit 0
