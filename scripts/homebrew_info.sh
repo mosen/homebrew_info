@@ -41,6 +41,7 @@ if [[ -f $brew ]]; then
     BREWCONFIG="$BREWCONFIG$(cd /; sudo -HE -u nobody $brew config | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/", "/g' -e 's/: /": "/g')"
     BREWCONFIG="$BREWCONFIG\"}]"
 
+    DIR=$(dirname $0)
     homebrewfile="$DIR/cache/homebrew_info.json"
     echo "${BREWCONFIG}" > "${homebrewfile}"
 
